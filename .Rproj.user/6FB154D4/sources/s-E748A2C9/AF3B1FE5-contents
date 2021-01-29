@@ -1,0 +1,232 @@
+---
+title: ""
+output:
+  html_document:
+    css: style.css
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+
+```{r load-data, include=F, warning=F, message=F}
+library(dplyr)
+library(reactable)
+library(htmltools)
+load(here::here('site_content', 'data', 'matchup_data.Rda'))
+load(here::here('site_content', 'data', 'standings.Rda'))
+
+# get current matchups
+
+n <- length(matchup_data)
+matchup_data <- matchup_data[[n]]
+
+match_ids <- unique(matchup_data$matchup_id)
+```
+
+
+```{r xaringan-tachyons, echo=FALSE, warning=F, message=F}
+xaringanExtra::use_tachyons()
+```
+
+```{r, echo=F}
+standings <- standings %>%
+  mutate(record = paste0(wins, "-", losses, "-", ties)) %>% 
+  select(team_id, url, team_logos, record) 
+
+matchup_data <- matchup_data %>% 
+  left_join(standings, by = c("team_ids" = "team_id")) %>% 
+  select(team_logos, team_name, wins, losses, ties, everything()) %>% 
+  select(-team_ids, -team_keys)
+
+style_max_bold = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+    }
+}
+
+create_matchup_table <- function(data, mid = 1) {
+  
+  tmp <- data %>% 
+    filter(matchup_id == mid)
+
+
+line_score_tbl <- reactable(
+    tmp,
+  sortable = FALSE,
+  defaultColDef = colDef(headerClass = "box-score-header", align = "center", minWidth = 50),
+  columns = list(
+    TEAM_ID = colDef(show = FALSE),
+    team_logos = colDef(cell = function(value) {
+                image <- img(src = value, height = "24px", alt = value)
+                tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              width = 30,
+              name = ""
+              ),
+    
+    team_name = colDef(
+      name = "",
+      align = "left",
+      minWidth = 150,
+      cell = function(value, index) {
+        url <- sprintf("%s", tolower(tmp[index, 'url']))
+        team_name <- value
+        team_record <- tmp[index, "record"]
+        tagList(
+          tags$a(class = "team-name", href = url, target = "_blank", team_name),
+          span(class = "team-record", team_record)
+        )
+      }
+    ),
+    completed_games = colDef(name = "GP", minWidth = 40),
+    remaining_games = colDef(name = "GR", minWidth = 40),
+    wins = colDef(name = "W", minWidth = 20,
+                  style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }
+                  ),
+    losses = colDef(name = "L", minWidth = 20,
+                    style = function(value, index, name) {
+    if (is.numeric(value) && value == min(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    ties = colDef(name = "T", minWidth = 20,
+                  style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    fgm_fga = colDef(name = "FGM/\nA", minWidth = 60,
+                     style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    fgp = colDef(name = 'FG%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              minWidth = 55,
+                 style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    ftm_fta = colDef(name = "FTM/\nA", minWidth = 60,
+                     style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    ftp = colDef(name = 'FT%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              minWidth = 55,
+                 style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    fgm3 = colDef(name="3PTM", minWidth = 55,
+                  style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    pts = colDef(name="PTS", minWidth = 45),rebounds = colDef(name="REB", width = 45,
+                                                           style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    assists = colDef(name="AST", minWidth = 45,
+                     style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    steals = colDef(name="ST", minWidth = 45,
+                    style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    blocks = colDef(name="BLK", minWidth = 45,
+                    style = function(value, index, name) {
+    if (is.numeric(value) && value == max(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    turnovers = colDef(name="TO", minWidth = 45,
+                       style = function(value, index, name) {
+    if (is.numeric(value) && value == min(tmp[[name]])) {
+      list(fontWeight = "bold")
+      }
+   }),
+    fgm = colDef(show=F),
+    fga = colDef(show=F),
+    ftm = colDef(show=F),
+    fta = colDef(show=F),
+    url= colDef(show=F),
+  
+  
+             
+    week = colDef(show=F),
+    matchup_id = colDef(show = F),
+    record = colDef(show = F)
+  ),
+  class = "line-score-tbl",
+  width = 900,
+  theme = reactableTheme(backgroundColor = "#333"))
+return(line_score_tbl)
+
+}
+
+
+ 
+```
+
+
+
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 1)
+
+```
+
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 2)
+
+```
+
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 3)
+
+```
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 4)
+
+```
+
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 5)
+
+```
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 6)
+
+```
+
+```{r, echo=F}
+ create_matchup_table(data = matchup_data, mid = 7)
+
+```

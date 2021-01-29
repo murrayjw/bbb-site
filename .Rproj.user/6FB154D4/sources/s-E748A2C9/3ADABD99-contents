@@ -1,0 +1,111 @@
+---
+title: "Team1"
+output:
+  html_document:
+    css: style.css
+---
+
+```{r, echo=F, warning=F, message=F}
+library(reactable)
+library(htmltools)
+library(dplyr)
+
+
+tid <- 1
+
+load(here::here('site_content', 'data', 'team_ids.Rda'))
+load(here::here('site_content', 'data', 'rosters.Rda'))
+load(here::here('site_content', 'data', 'all_player_stats.Rda'))
+
+
+
+team <- team_ids %>% 
+  dplyr::filter(team_id == tid)
+roster <- rosters[[tid]]
+player_stats <- all_player_stats %>% 
+  dplyr::filter(player_key %in% roster$player_key) %>% 
+  select(player_name, player_headshot, everything())
+
+
+tags$img(src = team$team_logos, class = 'center-img')
+```
+
+
+```{r, echo=F, warning=F, message=F}
+ reactable(player_stats,
+            defaultColDef = colDef(
+              sortNALast = TRUE,
+              minWidth = 45,
+              class = JS("function(rowInfo, colInfo, state) {
+        // Highlight sorted columns
+        for (var i = 0; i < state.sorted.length; i++) {
+          if (state.sorted[i].id === colInfo.id) {
+            return 'sorted'
+          }
+        }
+      }"),
+              headerClass = "box-score-header",
+
+            ),
+            columns = list(
+              player_key = colDef(show =F),
+              player_id = colDef(show=F),
+              url = colDef(show=F),
+              
+              player_name = colDef(
+                name = "",
+                align = "left",
+                minWidth = 150,
+                cell = function(value, index) {
+                 player_name <- value
+                 
+                 player_eligible <- as.character(player_stats[index, "player_elible"])
+                 
+                 htmltools::tagList(
+                         span(class = "team-name", player_name),
+                         span(class = "team-record", player_eligible)
+                      )}),
+              
+              player_headshot = colDef(cell = function(value) {
+                image <- img(src = value, height = "30px", alt = value)
+                htmltools::tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              width = 30,
+              name = ""
+              ),
+              
+              player_team = colDef(
+                name = "TEAM",  width = 150),
+              fgm_fga = colDef(name = "FGM/\nFGA", width = 60),
+              ftm_fta = colDef(name = "FTM/\nFTA", width = 60),
+              fgp = colDef(name = 'FG%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              ftp = colDef(name = 'FT%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              fg3m = colDef(name="3PTM", width = 55),
+              pts = colDef(name="PTS", width = 55),
+              rebounds = colDef(name="REB", width = 55),
+              assists = colDef(name="AST", width = 55),
+              steals = colDef(name="ST", width = 55),
+              blocks = colDef(name="BLK", width = 55),
+              turnovers = colDef(name="TO", width = 55),
+              fgm = colDef(show=F),
+              fga = colDef(show=F),
+              ftm = colDef(show=F),
+              fta = colDef(show=F),
+              player_position= colDef(show=F),
+              player_elible = colDef(show=F)
+            ),
+            showSortIcon = FALSE,
+            highlight = TRUE,
+            striped = TRUE,
+            class = "box-score-tbl",
+            defaultPageSize = 14,
+            height = 750,
+            fullWidth=F, selection = NULL)
+ 
+```

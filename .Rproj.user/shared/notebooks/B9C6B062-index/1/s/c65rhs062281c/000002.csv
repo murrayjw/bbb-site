@@ -1,0 +1,28 @@
+"0","load(here::here('site_content', 'data', 'standings.Rda'))
+"
+"2","Warning messages:
+"
+"2","1: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"
+"2","2: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"
+"2","3: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"
+"2","4: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"
+"2","5: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"
+"2","6: "
+"2","In readLines(""style.css"") :"
+"2"," incomplete final line found on 'style.css'
+"

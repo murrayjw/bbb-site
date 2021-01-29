@@ -1,0 +1,98 @@
+---
+title: "League Standings"
+output:
+  html_document:
+    css: style.css
+---
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+
+
+```{r load-data, include=F, warning=F, message=F}
+library(dplyr)
+library(reactable)
+library(htmltools)
+load(here::here('site_content', 'data', 'team_stats.Rda'))
+load(here::here('site_content', 'data', 'standings.Rda'))
+```
+
+
+```{r, echo=F}
+standings <- standings %>%
+  select(team_id, url) 
+
+team_stats <- team_stats %>% 
+  left_join(standings, by = "team_id") %>% 
+  select(manager, team_logos, everything())
+
+ reactable(team_stats,
+            defaultColDef = colDef(
+              sortNALast = TRUE,
+              minWidth = 45,
+              class = JS("function(rowInfo, colInfo, state) {
+        // Highlight sorted columns
+        for (var i = 0; i < state.sorted.length; i++) {
+          if (state.sorted[i].id === colInfo.id) {
+            return 'sorted'
+          }
+        }
+      }"),
+              headerClass = "box-score-header",
+
+            ),
+            columns = list(
+              team_id = colDef(show =F),
+              manager = colDef(name = "MANAGER", width = 75),
+              url = colDef(show=F),
+              
+              team_logos = colDef(cell = function(value) {
+                image <- img(src = value, height = "24px", alt = value)
+                tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              width = 30,
+              name = ""
+              ),
+              name = colDef(cell = function(value, index) {
+                # Render as a link
+                url <- sprintf("%s", tolower(team_stats[index, 'url']))
+                htmltools::tags$a(href = url, target = "_blank", as.character(value))
+              },
+                name = "NAME",  width = 150),
+
+              fga_fgm = colDef(show=F),
+              ftm_fta = colDef(show=F),
+              fgp = colDef(name = 'FG%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              ftp = colDef(name = 'FT%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              fg3m = colDef(name="3PTM", width = 55),
+              pts = colDef(name="PTS", width = 55),
+              rebounds = colDef(name="REB", width = 55),
+              assists = colDef(name="AST", width = 55),
+              steals = colDef(name="ST", width = 55),
+              blocks = colDef(name="BLK", width = 55),
+              turnovers = colDef(name="TO", width = 55),
+              fgm = colDef(show=F),
+              fga = colDef(show=F),
+              ftm = colDef(show=F),
+              fta = colDef(show=F),
+              url= colDef(show=F)
+            ),
+            showSortIcon = FALSE,
+            highlight = TRUE,
+            striped = TRUE,
+            class = "box-score-tbl",
+            defaultPageSize = 14,
+            height = 750,
+            fullWidth=F, selection = NULL,
+      theme = reactableTheme(backgroundColor = "#333"))
+
+```

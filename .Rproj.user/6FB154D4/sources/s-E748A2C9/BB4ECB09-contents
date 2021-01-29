@@ -1,0 +1,8 @@
+name: BBB | Big Balls Brand
+output_dir: '.'
+output:
+  html_document:
+    theme: !expr suppressWarnings(bslib::bs_add_rules(bslib::bs_theme(version = 4), readLines('style.css')))
+    css: style.css
+    lib_dir: site_libs
+    self_contained: no

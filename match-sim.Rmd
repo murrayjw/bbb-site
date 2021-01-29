@@ -1,0 +1,200 @@
+---
+title: ""
+output:
+  html_document:
+    css: style.css
+---
+  
+  
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(tidyr)
+require(shinydashboard)
+require(shiny)
+library(reactable)
+load(here::here('site_content', 'data', 'all_matchup_data.Rda'))
+
+# source the script to calculate all the records
+
+source(here::here('R', 'extract-all-wlt-records.R'))
+
+```
+
+
+For each week of the season we display an overall summary of how each team would perform
+(win/lose/tie) against the 13 other teams in the Weekly Summary tabs. We also display the details of each hypothetical match-up in the Details tab
+
+## {.tabset .tabset-fade}
+ 
+  
+  
+### Week 6
+  
+```{r, echo=F, warning=F, message=F}
+
+week_summary <- function(data, week_num = 1, font_size = 9) {
+  vice_raps_pal <- function(x) {
+    rgb(colorRamp(c("#CB0423", "#00471B"))(x), maxColorValue = 255)
+  }
+  tmp <- data %>% 
+    filter(week == week_num)
+  
+  wins <- as.numeric(sapply(strsplit(tmp$record, "-"), '[[', 1))
+  losses <- as.numeric(sapply(strsplit(tmp$record, "-"), '[[', 2))
+  week_sum <- ifelse(wins > losses, "win",
+                     ifelse(wins < losses, 'loss', 
+                            'tie'))
+  
+  tmp_sum <- tmp %>% 
+    mutate(week_sum = week_sum,
+           wins = wins, losses = losses) %>% 
+    group_by(team1) %>% 
+    count(week_sum)
+  
+  tmp_long <- tmp_sum %>%
+    pivot_wider(names_from = week_sum, values_from = n) %>% 
+    replace_na(list(loss = 0, win = 0, tie = 0)) %>% 
+    arrange(desc(win))
+  
+  if(!"tie" %in% names(tmp_long)) {
+    tmp_long <- tmp_long %>% 
+      mutate(tie = 0) %>% 
+      select(team1, win, loss, tie)
+  } else {
+    tmp_long <- tmp_long %>% 
+      select(team1, win, loss, tie)
+  }
+  
+   reactable(tmp_long, 
+            defaultColDef = colDef(style = function(value) {
+              
+              normalized <- (value - 0) / (13 - 0)
+              color <- vice_raps_pal(normalized)
+               list(background = color, fontSize=font_size) 
+              }) ,
+            columns = list(
+              team1 = colDef(name = "Team Name", style = list(fontSize = font_size))
+               ), theme = reactableTheme(backgroundColor = "#333"),
+            defaultPageSize = 14)
+  
+}
+
+
+
+create_tbl <- function(data, week_num = 1, font_size = 10) {
+  
+  vice_raps_pal <- function(x) {
+    rgb(colorRamp(c("#CB0423", "#00471B"))(x), maxColorValue = 255)
+  }
+  
+  tmp <- data %>% filter(week == week_num)  %>%
+    pivot_wider(names_from = team1, values_from = record) %>% 
+    select(-week)
+  
+  reactable(tmp, 
+            defaultColDef = colDef(headerStyle = list(fontSize = font_size),
+                                   style = function(value, index) {
+              
+              v <- as.numeric(sapply(strsplit(value, "-"), '[[', 1))
+              
+              any_miss <- is.na(v)
+              
+              if(any_miss) {
+                color <- '#fff#'
+              } else {
+              normalized <- (v - 0) / (9 - 0)
+              color <- vice_raps_pal(normalized)
+              
+              }
+               list(background = color, fontSize=font_size) 
+              }) ,
+            columns = list(
+              team_2 = colDef(name = "Team Name", style = list(fontSize = font_size))
+               ), theme = reactableTheme(backgroundColor = "#333"), defaultPageSize = 14)
+  
+}
+
+ts <- week_summary(data = all_results, week = 6)
+tb <- create_tbl(data = all_results, week = 6)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+
+```   
+
+### Week 5
+
+```{r, echo=F, warning=F, message=F}
+ts <- week_summary(data = all_results, week = 5)
+tb <- create_tbl(data = all_results, week = 5)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+```
+
+### Week 4
+
+```{r, echo=F, warning=F, message=F}
+ts <- week_summary(data = all_results, week = 4)
+tb <- create_tbl(data = all_results, week = 4)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+```
+
+
+### Week 3
+
+```{r, echo=F, warning=F, message=F}
+ts <- week_summary(data = all_results, week = 3)
+tb <- create_tbl(data = all_results, week = 3)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+```
+
+### Week 2
+
+```{r, echo=F, warning=F, message=F}
+ts <- week_summary(data = all_results, week = 2)
+tb <- create_tbl(data = all_results, week = 2)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+```
+
+### Week 1
+
+```{r, echo=F, warning=F, message=F}
+ts <- week_summary(data = all_results, week = 1)
+tb <- create_tbl(data = all_results, week = 1)
+
+tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Weekly Summary", ts),
+      tabPanel("Details", tb)
+    )
+```
+
+
+
+
+

@@ -1,0 +1,414 @@
+---
+title: "Weekly Stats"
+output:
+  html_document:
+    css: style.css
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(tidyr)
+require(shinydashboard)
+require(shiny)
+library(reactable)
+load(here::here('site_content', 'data', 'standings.Rda'))
+load(here::here('site_content', 'data', 'all_matchup_data.Rda'))
+```
+
+## {.tabset .tabset-fade}
+
+
+  
+### FGP
+
+```{r, echo=F, warning=F, message=F}
+ pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, fgp), fgp)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Field Goal Percentage")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, fgp, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Field Goal Percentage",
+       color = "Team Name")
+ 
+ tmp <- all_matchup_data %>% 
+   select(team_name, week, fgp) %>% 
+   pivot_wider(names_from = week, values_from = fgp)
+ 
+ 
+ 
+ names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+ 
+ create_tbl <- function(data, full_data, var, font_size = 10) {
+   
+   vice_raps_pal <- function(x) {
+   rgb(colorRamp(c("#753BBD", "#BA0C2F"))(x), maxColorValue = 255)
+   }
+   
+   reactable(data, 
+                 defaultColDef = colDef(style="font-size: 9px"),
+                 columns = list(
+                   team_name = colDef(name = "Team Name"),
+                   
+  week_1 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_1']])) / (max(data[['week_1']]) - min(data[['week_1']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 1"),
+  
+  week_2 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_2']])) / (max(data[['week_2']]) - min(data[['week_2']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 2"),
+  
+  week_3 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_3']])) / (max(data[['week_3']]) - min(data[['week_3']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 3"),
+  week_4 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_4']])) / (max(data[['week_4']]) - min(data[['week_4']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 4"),
+  week_5 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_5']])) / (max(data[['week_5']]) - min(data[['week_5']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 5"),
+  week_6 = colDef(style = function(value) {
+    normalized <- (value - min(data[['week_6']])) / (max(data[['week_6']]) - min(data[['week_6']]))
+    color <- vice_raps_pal(normalized)
+    list(background = color, fontSize=font_size)
+  }, name = "Week 6")
+  
+  
+), theme = reactableTheme(backgroundColor = "#333"), defaultPageSize = 14,)
+ 
+ }
+ 
+ 
+ tb <- create_tbl(data = tmp, var = 'fgp', full_data = all_matchup_data)
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+
+ 
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+ 
+ 
+```   
+    
+### FTP
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, ftp), ftp)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Free Throw Percentage")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, ftp, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Free Throw Percentage",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ 
+  tmp <- all_matchup_data %>% 
+   select(team_name, week, ftp) %>% 
+   pivot_wider(names_from = week, values_from = ftp)
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'ftp', full_data = all_matchup_data)
+  
+ tabBox(width=12,
+      id = "tabset2",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+### 3PFG
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, fgm3), fgm3)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Three Point Field Goals")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, fgm3, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Three Point Field Goals",
+       color = "Team Name")
+ 
+ 
+   tmp <- all_matchup_data %>% 
+    select(team_name, week, fgm3) %>% 
+     pivot_wider(names_from = week, values_from = fgm3)
+   
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'fgm3', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+### PTS
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, pts), pts)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Points")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, pts, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Points",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tmp <- all_matchup_data %>% 
+    select(team_name, week, pts) %>% 
+     pivot_wider(names_from = week, values_from = pts)
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'pts', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+
+### Rebounds
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, rebounds), rebounds)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Rebounds")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, rebounds, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Rebounds",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+   tmp <- all_matchup_data %>% 
+    select(team_name, week, rebounds) %>% 
+     pivot_wider(names_from = week, values_from = rebounds)
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'rebounds', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+
+### Assists
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, assists), assists)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Assists")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, assists, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Assists",
+       color = "Team Name")
+ 
+  tmp <- all_matchup_data %>% 
+    select(team_name, week, assists) %>% 
+     pivot_wider(names_from = week, values_from = assists)
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'assists', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+
+### Steals
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, steals), steals)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Steals")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, steals, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Steals",
+       color = "Team Name")
+ 
+ tmp <- all_matchup_data %>% 
+    select(team_name, week, steals) %>% 
+     pivot_wider(names_from = week, values_from = steals)
+  
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+ tb <- create_tbl(data = tmp, var = 'steals', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+
+### Blocks
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, blocks), blocks)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Blocks")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, blocks, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Blocks",
+       color = "Team Name")
+ 
+  tmp <- all_matchup_data %>% 
+    select(team_name, week, blocks) %>% 
+     pivot_wider(names_from = week, values_from = blocks)
+  
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+ tb <- create_tbl(data = tmp, var = 'blocks', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```
+
+
+### Turnovers
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, -turnovers), turnovers)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Blocks")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, turnovers, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Blocks",
+       color = "Team Name")
+tmp <- all_matchup_data %>% 
+    select(team_name, week, turnovers) %>% 
+     pivot_wider(names_from = week, values_from = turnovers)
+   names(tmp)[2:ncol(tmp)] <- paste0("week_", names(tmp)[2:ncol(tmp)])
+  
+ tb <- create_tbl(data = tmp, var = 'turnovers', full_data = all_matchup_data)
+ 
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Table", tb),
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2))
+```

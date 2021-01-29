@@ -1,0 +1,371 @@
+---
+title: "Weekly Stats"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    theme: bootstrap
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(plotly)
+library(ggplot2)
+require(shinydashboard)
+require(shiny)
+load(here::here('site_content', 'data', 'standings.Rda'))
+load(here::here('site_content', 'data', 'all_matchup_data.Rda'))
+```
+
+Row {data-height=550 .tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+  
+### FGP
+
+```{r, echo=F, warning=F, message=F}
+ pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, fgp), fgp)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Field Goal Percentage")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, fgp, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Field Goal Percentage",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+
+ 
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+ 
+ 
+```   
+    
+### FTP
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, ftp), ftp)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Free Throw Percentage")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, ftp, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Free Throw Percentage",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+### 3PFG
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, fgm3), fgm3)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Three Point Field Goals")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, fgm3, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Three Point Field Goals",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+### PTS
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, pts), pts)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Points")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, pts, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Points",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+### Rebounds
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, rebounds), rebounds)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Rebounds")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, rebounds, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Rebounds",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+### Assists
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, assists), assists)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Assists")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, assists, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Assists",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+### Steals
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, steals), steals)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Steals")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, steals, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Steals",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+### Steals
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, blocks), blocks)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Blocks")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, blocks, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Blocks",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+### Turnovers
+
+```{r, echo=F, warning=F, message=F}
+
+pp1 <- all_matchup_data %>% 
+            ggplot(aes(forcats::fct_reorder(team_name, -turnovers), turnovers)) + 
+            geom_boxplot() + 
+            coord_flip() +
+  labs(x = "Team", 
+       y= "Total Blocks")
+
+ pp2 <- all_matchup_data %>% 
+            ggplot(aes(week, turnovers, color = team_name)) + 
+            geom_line() + 
+   scale_x_continuous(breaks = 1:max(all_matchup_data$week)) +
+  labs(x = "Week", 
+       y= "Total Blocks",
+       color = "Team Name")
+       
+ pp1 <- ggplotly(pp1)
+ pp2 <- ggplotly(pp2)
+ tabBox(width=12,
+      id = "tabset1",
+      tabPanel("Overall", pp1),
+      tabPanel("Weekly", pp2)
+    )
+```
+
+
+Row {data-height=450}
+-------------------------------------
+
+### Chart 2
+
+```{r, echo=F, warning=F, message=F}
+library(reactable)
+standings <- standings %>% 
+  select(rank, manager, team_logos, everything())
+
+ tbl <- reactable(standings,
+            defaultColDef = colDef(
+              sortNALast = TRUE,
+              minWidth = 55,
+              class = JS("function(rowInfo, colInfo, state) {
+        // Highlight sorted columns
+        for (var i = 0; i < state.sorted.length; i++) {
+          if (state.sorted[i].id === colInfo.id) {
+            return 'sorted'
+          }
+        }
+      }"),
+              headerClass = "box-score-header",
+
+            ),
+            columns = list(
+              team_id = colDef(show =F),
+              manager = colDef(name = "MANAGER", minWidth = 75),
+              url = colDef(show=F),
+
+              rank = colDef(
+                name = 'RANK',
+                minWidth = 50,
+                cell = function(value) {
+                  if(nchar(value) == 1) {
+                    return(paste0('0', value))
+                  } else {
+                    return(as.character(value))
+                  }
+                }
+              ),
+              team_logos = colDef(cell = function(value) {
+                image <- img(src = value, height = "24px", class = "img-circle", alt = value)
+                tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              minWidth = 30,
+              name = ""
+              ),
+              name = colDef(cell = function(value, index) {
+                # Render as a link
+                url <- sprintf("%s", tolower(standings[index, 'url']))
+                htmltools::tags$a(href = url, target = "_blank", as.character(value))
+              },
+                name = "NAME",  minWidth = 100),
+
+              wins = colDef(name = 'W', minWidth = 30),
+              losses = colDef(name = 'L', minWidth = 30),
+              ties = colDef(name="T", minWidth = 30),
+              percentage = colDef(name = 'PCT',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              minWidth = 55),
+              conferencerecord = colDef( name = 'CONF'),
+              playoff_seed = colDef(name = 'PLAYOFFS', minWidth = 100),
+              games_back = colDef(name = "GAMES BACK", minWidth = 100)
+            ),
+            showSortIcon = FALSE,
+            highlight = TRUE,
+            striped = TRUE,
+            class = "box-score-tbl",
+            defaultPageSize = 14,
+            height = "auto", selection = NULL,
+      theme = reactableTheme(backgroundColor = "#333"))
+
+ 
+div(class = "box-score-title", "Standings")
+div(tbl
+)
+```   
+    
+### Chart 3
+
+```{r}
+```
+ 

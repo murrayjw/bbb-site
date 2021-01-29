@@ -1,0 +1,261 @@
+---
+title: "League Standings"
+output:
+  html_document:
+    css: style.css
+---
+
+
+```{r, echo = F, warning=F, message=F}
+library(dplyr)
+library(reactable)
+library(htmltools)
+load(here::here('site_content', 'data', 'standings.Rda'))
+load(here::here('site_content', 'data', 'team_ids.Rda'))
+load(here::here('site_content', 'data', 'rosters.Rda'))
+load(here::here('site_content', 'data', 'all_player_stats.Rda'))
+load(here::here('site_content', 'data', 'matchup_data.Rda'))
+
+week <- length(matchup_data)
+
+match_text <- paste("Week", week, "match-up")
+current_matchups <- matchup_data[[length(matchup_data)]]
+
+rank_text <- function(rank) {
+  ifelse(rank == 1, "1st Place",
+    ifelse(rank == 2, "2nd Place",
+           ifelse(rank == 3,
+                  "3rd Place",
+                  paste0(rank,"th Place"))))
+}
+
+get_record <- function(wins, losses, ties) {
+  paste(wins, losses, ties, sep = "-")
+}
+
+
+row_details <- function(index) {
+  ind <-  standings[['team_id']][[index]]
+  team_stand <- standings %>% 
+    dplyr::filter(team_id == ind)
+  
+  team_match <- current_matchups %>% 
+    dplyr::mutate(sel = ifelse(team_ids == ind, 1, 0)) %>% 
+    dplyr::group_by(matchup_id) %>% 
+    dplyr::mutate(sel = max(sel)) %>% 
+    dplyr::filter(sel == 1) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::select(-sel)
+  
+  
+  opp <- standings %>% 
+    filter(team_id %in% team_match$team_ids & team_id != ind)
+  
+  score_team_1 = team_match$wins[team_match$team_ids == ind]
+  score_team_2 = team_match$wins[team_match$team_ids != ind]
+
+
+  detail <- div(
+    class = "container",
+    div(class = "row", 
+        div(class = "col-md-4",
+            div(class="d-flex",
+                div(class="p-1 align-self-start",
+                    tags$img(src = team_stand$team_logos, class = 'img-circle', height = "90")
+                    ),
+                div( tags$ul(class="no-bullets",
+                  tags$li(rank_text(team_stand$rank)),
+                  tags$li(get_record(team_stand$wins, team_stand$losses, team_stand$ties)))
+                )
+            )
+        ),
+        div(class = "col-md-4",
+            div(class="d-flex",
+                span(class="p-1 align-self-center",
+                     "Week 6 matchup"),
+                div(class="item p-1 align-self-start",
+                    tags$img(src = team_stand$team_logos, class = 'img-circle', height = "75"),
+                    span(class="caption", score_team_1)
+                ),
+                div(class="p-1 align-self-middle",
+                    p("VS")
+                ),
+                div(class="item p-1 align-self-end",
+                    tags$img(src = opp$team_logos, class = 'img-circle', height = "75"),
+                    span(class="caption", score_team_2)
+                )
+                
+            ),
+                    
+            
+        )
+  )
+  )
+
+    #
+  roster <- rosters[[ind]]
+  
+  player_stats <- all_player_stats %>% 
+    dplyr::filter(player_key %in% roster$player_key) %>% 
+  select(player_name, player_headshot, everything())
+  
+  
+  tbl <- reactable(player_stats,
+            defaultColDef = colDef(
+              sortNALast = TRUE,
+              minWidth = 45,
+              class = JS("function(rowInfo, colInfo, state) {
+        // Highlight sorted columns
+        for (var i = 0; i < state.sorted.length; i++) {
+          if (state.sorted[i].id === colInfo.id) {
+            return 'sorted'
+          }
+        }
+      }"),
+              headerClass = "box-score-small",
+
+            ),
+            columns = list(
+              player_key = colDef(show =F),
+              player_id = colDef(show=F),
+              url = colDef(show=F),
+              
+              player_name = colDef(
+                name = "",
+                align = "left",
+                minWidth = 150,
+                cell = function(value, index) {
+                 player_name <- value
+                 
+                 player_eligible <- as.character(player_stats[index, "player_elible"])
+                 
+                 htmltools::tagList(
+                         span(class = "team-name", player_name),
+                         span(class = "team-record", player_eligible)
+                      )}),
+              
+              player_headshot = colDef(cell = function(value) {
+                image <- img(src = value, height = "30px", alt = value)
+                htmltools::tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              minWidth = 30,
+              name = ""
+              ),
+              
+              player_team = colDef(
+                name = "TEAM",  minWidth = 80),
+              fgm_fga = colDef(name = "FGM/\nFGA", width = 60),
+              ftm_fta = colDef(name = "FTM/\nFTA", width = 60),
+              fgp = colDef(name = 'FG%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              ftp = colDef(name = 'FT%',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              width = 55),
+              fg3m = colDef(name="3PTM", width = 55),
+              pts = colDef(name="PTS", width = 55),
+              rebounds = colDef(name="REB", width = 55),
+              assists = colDef(name="AST", width = 55),
+              steals = colDef(name="ST", width = 55),
+              blocks = colDef(name="BLK", width = 55),
+              turnovers = colDef(name="TO", width = 55),
+              fgm = colDef(show=F),
+              fga = colDef(show=F),
+              ftm = colDef(show=F),
+              fta = colDef(show=F),
+              player_position= colDef(show=F),
+              player_elible = colDef(show=F)
+            ),
+            showSortIcon = FALSE,
+            highlight = TRUE,
+            striped = TRUE,
+            class = "box-score-tbl-small",
+            defaultPageSize = 14,
+            height = 750, selection = NULL, theme = reactableTheme(backgroundColor = "#333"))
+ 
+  detail <- tagAppendChild(detail, tbl)
+  detail
+}
+
+
+
+
+standings <- standings %>% 
+  select(rank, manager, team_logos, everything())
+
+ tbl <- reactable(standings,
+            defaultColDef = colDef(
+              sortNALast = TRUE,
+              minWidth = 55,
+              class = JS("function(rowInfo, colInfo, state) {
+        // Highlight sorted columns
+        for (var i = 0; i < state.sorted.length; i++) {
+          if (state.sorted[i].id === colInfo.id) {
+            return 'sorted'
+          }
+        }
+      }"),
+              headerClass = "box-score-header",
+
+            ),
+            columns = list(
+              team_id = colDef(show =F),
+              manager = colDef(name = "MANAGER", minWidth = 75),
+              url = colDef(show=F),
+
+              rank = colDef(
+                name = 'RANK',
+                minWidth = 50,
+                cell = function(value) {
+                  if(nchar(value) == 1) {
+                    return(paste0('0', value))
+                  } else {
+                    return(as.character(value))
+                  }
+                }
+              ),
+              team_logos = colDef(cell = function(value) {
+                image <- img(src = value, height = "24px", class = "img-circle", alt = value)
+                tagList(
+                  div(style = list(display = "inline-block", width = "24px"), image)
+                )
+              },
+              minWidth = 30,
+              name = ""
+              ),
+              name = colDef(cell = function(value, index) {
+                # Render as a link
+                url <- sprintf("%s", tolower(standings[index, 'url']))
+                htmltools::tags$a(href = url, target = "_blank", as.character(value))
+              },
+                name = "NAME",  minWidth = 100),
+
+              wins = colDef(name = 'W', minWidth = 30),
+              losses = colDef(name = 'L', minWidth = 30),
+              ties = colDef(name="T", minWidth = 30),
+              percentage = colDef(name = 'PCT',
+                              format = colFormat(percent = TRUE, digits = 1),
+                              minWidth = 55),
+              conferencerecord = colDef( name = 'CONF'),
+              playoff_seed = colDef(name = 'PLAYOFFS', minWidth = 100),
+              games_back = colDef(name = "GAMES BACK", minWidth = 100)
+            ),
+            showSortIcon = FALSE,
+            highlight = TRUE,
+            striped = TRUE,
+            class = "box-score-tbl",
+            defaultPageSize = 14,
+            height = "auto", selection = NULL,
+      onClick = "expand",
+      details = row_details, theme = reactableTheme(backgroundColor = "#333"))
+
+ 
+div(class = "box-score-title", "Standings")
+div(tbl
+)
+
+```
+
+
