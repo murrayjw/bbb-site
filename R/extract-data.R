@@ -90,3 +90,10 @@ save(team_ids, file = here::here('site_content', 'data', 'team_ids.Rda'))
 available_players <- get_available_players()
 # save list
 save(available_players, file = here::here('site_content', 'data', 'available_players.Rda'))
+
+
+## Player game stats
+
+player_logs <- nbastatR::game_logs(seasons = 2021, 
+                                   result_types = "player")
+save(player_logs, file = here::here('site_content', 'data', 'player_logs.Rda'))
